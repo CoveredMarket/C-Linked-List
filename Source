@@ -1,0 +1,198 @@
+ /*--Title-- 
+General Linked List Manipulation
+
+--Author--
+Dylan Collins
+
+--Description--
+This program reads induvidual isntructions and builds a linked list 
+based on them, keeping order in mind with regard to the age entered. Contact the
+author for inquiries about any modification such as file reading, etc.
+
+--NOTICE--
+THIS PROGRAM WAS WRITTEN IN VISUAL STUDIO MAKING #INCLUDE "PCH.H" NECESSARY FOR COMPILATION!
+THIS HEADER MAY NOT BE NECESSARY IN YOUR COMPILER!
+*/
+
+//Headers
+#include "pch.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+//Function Prototypes
+void parseCommand();
+void clear();
+struct Node *newNode(char *name, int age);
+void sortedInsert(struct Node** headRef, struct Node* new);
+void deleteNode(struct Node **head_ref, int key);
+void printNode(struct Node *had, int key);
+
+//Node Struct
+struct Node {
+	char *name;
+	int age;
+	struct Node *next;
+};
+
+//Number of nodes
+int numOfNodes = 0;
+
+//Char* arrays for parsing command
+char command[50];
+char first[20];
+char second[25];
+char third[3];
+
+//MAIN FUNCTION
+void main() {
+	char name[50];
+	int age = 0;
+	struct Node* head = NULL;
+	struct Node *n = NULL;
+
+	//MAIN LOOP
+	while (strcmp(first, "stop") != 0) {
+		gets(command);
+		parseCommand();
+
+		//Insert Command
+		if (strcmp(first, "insert") == 0) {
+			n = newNode(second, atoi(third));
+			sortedInsert(&head, n);
+			numOfNodes++;
+		}
+		//Remove Command
+		else if (strcmp(first, "remove") == 0 && atoi(second) <= numOfNodes) {
+			deleteNode(&head, atoi(second));
+			numOfNodes--;
+		}
+		//Print Command
+		else if (strcmp(first, "print") == 0 && atoi(second) <= numOfNodes) {
+			printNode(head, atoi(second));
+		}
+
+		clear();
+	}
+
+}
+
+//Parses chars in 'command[]' into induvidual words, first[], second[], third[].
+void parseCommand() {
+	int i = 0;
+	int i2 = 0;
+
+	while (command[i] != ' ' && i < sizeof(command)) {
+		first[i] = command[i];
+		i++;
+	}
+
+	if (strcmp(first, "stop") == 0) {
+		return;
+	}
+
+	i++;
+	i2 = 0;
+
+	while (command[i] != ' ' && command[i] != '\0') {
+		second[i2] = command[i];
+		i++;
+		i2++;
+	}
+
+	i++;
+	i2 = 0;
+	while (command[i] != '\0') {
+		third[i2] = command[i];
+		i++;
+		i2++;
+	}
+}
+
+//Inserts a node in the linked list based on age
+void sortedInsert(struct Node** headRef, struct Node* new)
+{
+	struct Node* current;
+
+	//Special case for the head end or swap
+	if (*headRef == NULL || (*headRef)->age > new->age)
+	{
+		new->next = *headRef;
+		*headRef = new;
+	}
+	else
+	{
+		//Locate the node before the point of insertion
+		current = *headRef;
+		while (current->next != NULL && current->next->age < new->age)
+		{
+			current = current->next;
+		}
+
+		new->next = current->next;
+		current->next = new;
+	}
+}
+
+void deleteNode(struct Node **head_ref, int key)
+{
+	// Store head node 
+	struct Node* temp = *head_ref;
+	struct Node* prev = temp;
+
+	//Iterator
+	int i = 1;
+
+	if (temp != NULL && key == 1)
+	{
+		*head_ref = temp->next;   
+		free(temp);               
+		return;
+	}
+
+	while (temp != NULL && i != key)
+	{
+		prev = temp;
+		temp = temp->next;
+		i++;
+	}
+
+	if (temp == NULL) return;
+	prev->next = temp->next;
+	free(temp);
+}
+
+//Function for creating a new node with given parameters.
+struct Node *newNode(char *name, int age)
+{
+	struct Node* newNode = (struct Node*) malloc(sizeof(struct Node));
+
+	newNode->name = _strdup(name);
+	newNode->age = age;
+	newNode->next = NULL;
+
+	return newNode;
+}
+
+//Prints a node that corresponds with the given key. 1 = Head
+void printNode(struct Node *head, int key) {
+
+	struct Node *temp = head;
+	int i = 1;
+
+	while (i != key)
+	{
+		temp = temp->next;
+		i++;
+	}
+
+	printf("%s %d\n", temp->name, temp->age);
+}
+
+//Resets char arrays for parsing cmmands
+void clear() {
+	memset(command, 0, sizeof(command));
+	memset(first, 0, sizeof(command));
+	memset(second, 0, sizeof(command));
+	memset(third, 0, sizeof(command));
+}
